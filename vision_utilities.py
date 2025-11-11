@@ -23,7 +23,7 @@ import random
 from datetime import datetime
 
 
-# Connect to the mindvision camera; must be hardwired in
+# Connect to the mindvision camera; must be hardwired in, writes an image to file so that other functions can retrieve it
 def connect_camera():
     DevList = mvsdk.CameraEnumerateDevice()
     nDev = len(DevList)
@@ -73,7 +73,8 @@ def connect_camera():
 
     return filename
 
-#Takes image path as input and returns clump center coordinates as output
+#Takes image path as input and returns clump center coordinates as output.
+    # These output coordinates are fed to image_to_robot_coords
 def detect_dice_clumps(image_path, merge_distance=100, min_area=300, box_scale=1.00, area_threshold=6000):
     """
     Detect yellow dice in an image, merge close boxes, and return center coordinates (cx, cy, c_theta)
@@ -249,6 +250,7 @@ def process_image(image_path):
     return [(d[0], d[1], d[2]) for d in dice_data]
 
 # Draw bounding boxes and return dice image coordinates
+# this output is fed to get_calibration_coordinates 
 def process_callibration_image(image_path, num_dice):
     image = cv2.imread(image_path)
     if image is None:
@@ -348,7 +350,7 @@ def image_to_robot_coords(dice_coords):
 
     return fanuc_coords, standard_coords
 
-# turn dice coordinates into 6-item positions for the standardbot
+# turn dice coordinates into 6-item positions for the fanuc
 def fanuc_to_full_pose(fanuc_coords, z, yaw, pitch):
     """
     Convert Fanuc (x, y, roll) coordinates to full robot pose [x, y, z, yaw, pitch, roll].
